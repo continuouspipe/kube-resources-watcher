@@ -4,7 +4,7 @@ TAG=v0.0.2
 all: tests build push
 
 build:
-	env GOOS=linux GOARCH=amd64 go build -o ./bin/kube-resources-watcher-linux-amd64 github.com/continuouspipe/continuouspipe/kube-resources-watcher
+	env GOOS=linux GOARCH=amd64 go build -o ./bin/kube-resources-watcher-linux-amd64 github.com/continuouspipe/kube-resources-watcher
 	docker build --squash -t $(IMAGE_NAME):$(TAG) .
 
 push:

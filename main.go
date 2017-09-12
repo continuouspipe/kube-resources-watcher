@@ -6,7 +6,7 @@ import (
     "os"
     "errors"
     "time"
-    "github.com/continuouspipe/continuouspipe/kube-resources-watcher/watcher"
+    "github.com/continuouspipe/kube-resources-watcher/watcher"
     "strconv"
 )
 

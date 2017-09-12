@@ -3,13 +3,17 @@ package watcher
 import (
     "testing"
     "time"
+    "sync"
 )
 
 type CountedCalledUpdater struct {
     Calls map[string]int
+    mutex *sync.Mutex
 }
 func (dru* CountedCalledUpdater) Update(namespace string) error {
+    dru.mutex.Lock()
     dru.Calls[namespace]++
+    dru.mutex.Unlock()
 
     return nil
 }
@@ -17,7 +21,9 @@ func (dru* CountedCalledUpdater) Update(namespace string) error {
 func TestDebouncedUpdaterIsNotCallingMoreThanExpected(t *testing.T) {
     countedUpdater := &CountedCalledUpdater{
         Calls: map[string]int{},
+        mutex: &sync.Mutex{},
     }
+
     updater := NewDebouncedResourceUpdater(countedUpdater, 500 * time.Millisecond)
     updater.Update("namespace")
     updater.Update("namespace")

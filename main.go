@@ -8,6 +8,7 @@ import (
     "time"
     "github.com/continuouspipe/kube-resources-watcher/watcher"
     "strconv"
+    "fmt"
 )
 
 func main() {
@@ -33,9 +34,31 @@ func main() {
 
     stop := make(chan struct{})
     go w.Watch(stop)
-    for{
-        time.Sleep(time.Second)
+
+    minimumUpdateInterval, foundInterval := GetMinimumUpdateInterval()
+    for {
+        if foundInterval {
+            if err = w.Snapshot(); err != nil {
+                fmt.Printf("[ERROR] %s\n", err.Error())
+            }
+        }
+
+        time.Sleep(minimumUpdateInterval)
     }
+}
+
+func GetMinimumUpdateInterval() (time.Duration, bool) {
+    intervalString := os.Getenv("MINIMUM_UPDATE_INTERVAL")
+    if intervalString == "" {
+        return time.Second, false
+    }
+
+    intervalSeconds, err := strconv.ParseInt(intervalString, 10, 32)
+    if err != nil {
+        return time.Second, false
+    }
+
+    return time.Duration(intervalSeconds) * time.Second, true
 }
 
 func GetResourceUpdater(kubernetesClient *kubernetes.Clientset, store watcher.NamespaceResourceStore) (watcher.ResourceUpdater, error) {

@@ -54,3 +54,27 @@ func (w *Watcher) ObjectHasChanged(obj interface{}) {
         fmt.Println("ERROR: "+err.Error())
     }
 }
+
+func (w* Watcher) Snapshot() error {
+    namespaces, err := w.KubernetesClient.Namespaces().List(metav1.ListOptions{})
+    if err != nil {
+        return err
+    }
+
+    errors := []error{}
+
+    for _, namespace := range namespaces.Items {
+        err = w.ResourceUpdater.Update(namespace.Name)
+
+        if err != nil {
+            fmt.Printf("[ERROR] [%s] %s\n", namespace.Name, err.Error())
+            errors = append(errors, err)
+        }
+    }
+
+    if len(errors) > 0 {
+        return fmt.Errorf("Something went wrong during the snapshot for %d namespaces", len(errors));
+    }
+
+    return nil
+}
